@@ -430,8 +430,8 @@ const categoryContent: Record<string, CategoryContent> = {
 
   'motorised-dual-zebra-shades': {
     productDetails: [
-      'Motorised dual zebra shades are a modern window covering designed to provide flexible light control, stylish design, and effortless remote operation. These innovative blinds feature alternating bands of sheer and opaque fabric that move past each other, allowing you to adjust the amount of natural light entering your room.',
-      'At Online Blinds, our motorised dual zebra shades are custom made to measure, ensuring the perfect fit for your windows. With a built-in motor and remote control operation, you can easily raise, lower, or adjust the shades with the press of a button.',
+      'Motorised Day and Night Blinds are a modern window covering designed to provide flexible light control, stylish design, and effortless remote operation. These innovative blinds feature alternating bands of sheer and opaque fabric that move past each other, allowing you to adjust the amount of natural light entering your room.',
+      'At Online Blinds, our motorised Day and Night Blinds are custom made to measure, ensuring the perfect fit for your windows. With a built-in motor and remote control operation, you can easily raise, lower, or adjust the shades with the press of a button.',
       'Combining elegant design with modern convenience, motorised zebra shades are a popular choice for homeowners who want both style and functionality.',
     ],
     keyFeatures: [
@@ -447,7 +447,7 @@ const categoryContent: Record<string, CategoryContent> = {
       'Suitable for both residential and modern apartment settings',
     ],
     specifications: [
-      { label: 'Product Type', value: 'Motorised Dual Zebra Shades (Day and Night Blinds)' },
+      { label: 'Product Type', value: 'Motorised Day and Night Blinds' },
       { label: 'Fabric Type', value: 'Dual-layer alternating sheer and opaque bands' },
       { label: 'Operation', value: 'Remote control (electric motor)' },
       { label: 'Control Type', value: 'Cordless — remote control included' },
@@ -481,15 +481,15 @@ const categoryContent: Record<string, CategoryContent> = {
     ],
     childSafety: [
       'At Online Blinds, safety is a top priority. All of our blinds are designed in accordance with modern child safety standards.',
-      'Our motorised dual zebra shades are completely cordless, eliminating hanging cords or chains and making them one of the safest window covering options for homes with children and pets.',
+      'Our motorised Day and Night Blinds are completely cordless, eliminating hanging cords or chains and making them one of the safest window covering options for homes with children and pets.',
     ],
   },
 
   'day-and-night-blinds': {
     productDetails: [
-      'Dual zebra shades are a modern and stylish window treatment designed to give you complete control over light and privacy. These innovative blinds feature alternating sheer and solid fabric bands that slide past each other, allowing you to easily adjust the level of sunlight entering your room.',
-      'At Online Blinds, our dual zebra shades are custom made to measure, ensuring a perfect fit for every window. Their sleek design and versatile functionality make them one of the most popular window coverings for modern homes.',
-      'Whether you want to brighten your living room with natural daylight or create privacy in your bedroom, dual zebra shades provide the perfect combination of style, comfort, and flexibility.',
+      'Day and Night Blinds are a modern and stylish window treatment designed to give you complete control over light and privacy. These innovative blinds feature alternating sheer and solid fabric bands that slide past each other, allowing you to easily adjust the level of sunlight entering your room.',
+      'At Online Blinds, our Day and Night Blinds are custom made to measure, ensuring a perfect fit for every window. Their sleek design and versatile functionality make them one of the most popular window coverings for modern homes.',
+      'Whether you want to brighten your living room with natural daylight or create privacy in your bedroom, Day and Night Blinds provide the perfect combination of style, comfort, and flexibility.',
     ],
     keyFeatures: [
       'Flexible light control — align sheer bands to filter daylight or solid bands for privacy',

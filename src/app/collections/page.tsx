@@ -1,5 +1,5 @@
 ﻿import { Header, Footer, FAQ } from '@/components';
-import { fetchProducts, transformProduct, extractFilterOptions } from '@/lib/api';
+import { fetchProducts, transformProduct, extractFilterOptions, CatalogSortOption, PaginationMeta } from '@/lib/api';
 import CategoryHero from '@/components/collection/CategoryHero';
 import ProductGridWithFilters from '@/components/collection/ProductGridWithFilters';
 import { Product } from '@/types';
@@ -9,15 +9,34 @@ export const metadata = {
   description: 'Browse our complete range of premium window blinds. Find the perfect blinds for your home.',
 };
 
-export default async function CollectionsPage() {
+interface CollectionsPageProps {
+  searchParams?: Promise<{ page?: string; sort?: string }>;
+}
+
+export default async function CollectionsPage({ searchParams }: CollectionsPageProps) {
+  const resolvedSearchParams = await (searchParams ?? Promise.resolve({} as { page?: string; sort?: string }));
+  const page = Math.max(1, Number(resolvedSearchParams.page) || 1);
+  const sortBy = (resolvedSearchParams.sort as CatalogSortOption) || 'best-selling';
+  const pageSize = 24;
   let products: Product[] = [];
   let filterOptions: { colors: string[]; patterns: string[] } = { colors: [], patterns: [] };
+  let pagination: PaginationMeta = {
+    page,
+    limit: pageSize,
+    total: 0,
+    totalPages: 0,
+    hasNextPage: false,
+    hasPreviousPage: false,
+  };
   
   try {
-    const response = await fetchProducts();
+    const response = await fetchProducts({ page, limit: pageSize, sortBy });
     const apiProducts = response.data;
     products = apiProducts.map(transformProduct);
     filterOptions = extractFilterOptions(apiProducts);
+    if (response.pagination) {
+      pagination = response.pagination;
+    }
   } catch (error) {
     console.error('Error fetching products:', error);
   }
@@ -30,7 +49,7 @@ export default async function CollectionsPage() {
         <CategoryHero
           title="All Products"
           description="Explore our complete range of premium window blinds. From vertical to roller, find the perfect style to complement your space."
-          productCount={products.length}
+          productCount={pagination.total}
         />
 
         <div className="px-4 md:px-6 lg:px-20 py-8 md:py-12">
@@ -39,6 +58,9 @@ export default async function CollectionsPage() {
               products={products}
               filterOptions={filterOptions}
               categoryName="All Products"
+              pagination={pagination}
+              currentSort={sortBy}
+              basePath="/collections"
             />
           </div>
         </div>

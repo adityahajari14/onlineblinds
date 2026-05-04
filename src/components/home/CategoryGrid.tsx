@@ -1,22 +1,21 @@
-import Link from 'next/link';
+﻿import Link from 'next/link';
 import Image from 'next/image';
 
 const categoryItems = [
-  { label: 'Light Filtering Vertical Blinds', href: '/collections/light-filtering-vertical-blinds', image: "/home/categories/light_filtering_vertical_blinds.webp" },
-  { label: 'Blackout Vertical Blinds', href: '/collections/blackout-vertical-blinds', image: "/home/categories/blackout_vertical_blinds.webp" },
-  { label: 'Waterproof Blackout Roller Shades', href: '/collections/waterproof-blackout-roller-shades', image: "/home/categories/waterproof_blackout_roller_shades.webp" },
-  { label: 'Dual Zebra Shades', href: '/collections/day-and-night-blinds', image: "/home/categories/dual_zebra_shades.webp" },
-  { label: 'Light Filtering Roller Shades', href: '/collections/light-filtering-roller-shades', image: "/home/categories/light_filtering_roller_shades.webp" },
-  { label: 'Blackout Roller Shades', href: '/collections/blackout-roller-shades', image: "/home/categories/blackout_roller_shades.webp" },
-  { label: 'Motorized Roller Shades', href: '/collections/motorised-roller-shades', image: "/home/categories/motorised_roller_shades.webp" },
-  { label: 'Motorized Dual Zebra Shades', href: '/collections/motorised-dual-zebra-shades', image: "/home/categories/motorised_dual_zebra_shades.webp" },
+  { label: 'Light Filtering Vertical Blinds', href: '/collections/light-filtering-vertical-blinds', image: '/home/categories/light_filtering_vertical_blinds.webp' },
+  { label: 'Blackout Vertical Blinds', href: '/collections/blackout-vertical-blinds', image: '/home/categories/blackout_vertical_blinds.webp' },
+  { label: 'Waterproof Blackout Roller Shades', href: '/collections/waterproof-blackout-roller-shades', image: '/home/categories/waterproof_blackout_roller_shades.webp' },
+  { label: 'Day & Night Blinds', href: '/collections/day-and-night-blinds', image: '/home/categories/dual_zebra_shades.webp' },
+  { label: 'Light Filtering Roller Shades', href: '/collections/light-filtering-roller-shades', image: '/home/categories/light_filtering_roller_shades.webp' },
+  { label: 'Blackout Roller Shades', href: '/collections/blackout-roller-shades', image: '/home/categories/blackout_roller_shades.webp' },
+  { label: 'Motorized Roller Shades', href: '/collections/motorised-roller-shades', image: '/home/categories/motorised_roller_shades.webp' },
+  { label: 'Motorized Day & Night Blinds', href: '/collections/motorised-dual-zebra-shades', image: '/home/categories/motorised_dual_zebra_shades.webp' },
 ];
 
 const CategoryGrid = () => {
   return (
     <section className="bg-white py-16 md:py-24">
       <div className="max-w-[1280px] mx-auto px-5 md:px-8">
-        {/* Header row */}
         <div className="flex items-end justify-between mb-10 md:mb-12">
           <div className="flex flex-col gap-2">
             <div className="flex items-center gap-2.5">
@@ -38,7 +37,6 @@ const CategoryGrid = () => {
           </Link>
         </div>
 
-        {/* Grid */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
           {categoryItems.map((cat, i) => (
             <Link
@@ -56,7 +54,6 @@ const CategoryGrid = () => {
                     className="object-cover transition-transform duration-700 group-hover:scale-[1.06]"
                   />
                 )}
-                {/* Hover overlay */}
                 <div className="absolute inset-0 bg-primary/0 group-hover:bg-primary/8 transition-colors duration-300" />
               </div>
               <div className="px-4 py-3.5 flex items-center justify-between border-t border-border/40 group-hover:border-primary/20 transition-colors">

@@ -117,8 +117,11 @@ export interface Category {
 
 import {
   fetchShopifyProductsMerged,
+  fetchShopifyProductsMergedPage,
   fetchShopifyProductByHandleMerged,
   fetchShopifyCollectionsMapped,
+  fetchAllShopifyProductsByCollectionMerged,
+  fetchShopifyProductsByCollectionMergedPage,
 } from './shopify';
 import {
   isElectricalDayNightProduct,
@@ -148,6 +151,71 @@ interface FetchProductsParams {
   limit?: number;
   tags?: string[];
   search?: string;
+  sortBy?: CatalogSortOption;
+}
+
+export type CatalogSortOption = 'best-selling' | 'price-low' | 'price-high' | 'name-az' | 'name-za';
+
+export interface PaginationMeta {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
+}
+
+function canUseSourcePagination(sortBy?: CatalogSortOption): boolean {
+  return sortBy !== 'price-low' && sortBy !== 'price-high';
+}
+
+export function sortApiProducts(products: ApiProduct[], sortBy: CatalogSortOption = 'best-selling'): ApiProduct[] {
+  const sorted = [...products];
+
+  switch (sortBy) {
+    case 'price-low':
+      sorted.sort((a, b) => Number(a.price) - Number(b.price));
+      break;
+    case 'price-high':
+      sorted.sort((a, b) => Number(b.price) - Number(a.price));
+      break;
+    case 'name-az':
+      sorted.sort((a, b) => a.title.localeCompare(b.title));
+      break;
+    case 'name-za':
+      sorted.sort((a, b) => b.title.localeCompare(a.title));
+      break;
+    default:
+      break;
+  }
+
+  return sorted;
+}
+
+export function paginateApiProducts(
+  products: ApiProduct[],
+  page: number = 1,
+  limit?: number
+): { items: ApiProduct[]; pagination: PaginationMeta } {
+  const safePage = Math.max(1, page);
+  const safeLimit = typeof limit === 'number' ? Math.max(1, limit) : products.length || 1;
+  const total = products.length;
+  const totalPages = typeof limit === 'number' ? Math.ceil(total / safeLimit) : (total > 0 ? 1 : 0);
+  const startIndex = typeof limit === 'number' ? (safePage - 1) * safeLimit : 0;
+  const endIndex = typeof limit === 'number' ? startIndex + safeLimit : products.length;
+  const items = typeof limit === 'number' ? products.slice(startIndex, endIndex) : products;
+
+  return {
+    items,
+    pagination: {
+      page: safePage,
+      limit: safeLimit,
+      total,
+      totalPages,
+      hasNextPage: typeof limit === 'number' ? safePage < totalPages : false,
+      hasPreviousPage: typeof limit === 'number' ? safePage > 1 : false,
+    },
+  };
 }
 
 /**
@@ -156,6 +224,32 @@ interface FetchProductsParams {
  */
 export async function fetchProducts(params?: FetchProductsParams): Promise<ApiProductsResponse> {
   try {
+    const page = Math.max(1, params?.page || 1);
+    const limit = typeof params?.limit === 'number' ? Math.max(1, params.limit) : undefined;
+
+    if (limit && (!params?.tags || params.tags.length === 0) && canUseSourcePagination(params?.sortBy)) {
+      const response = await fetchShopifyProductsMergedPage({
+        page,
+        limit,
+        searchQuery: params?.search,
+        sortBy: params?.sortBy,
+      });
+
+      const totalPages = Math.ceil(response.total / limit);
+      return {
+        success: true,
+        data: response.products,
+        pagination: {
+          page,
+          limit,
+          total: response.total,
+          totalPages,
+          hasNextPage: page < totalPages,
+          hasPreviousPage: page > 1,
+        },
+      };
+    }
+
     let allProducts = await fetchShopifyProductsMerged(params?.search);
 
     // Apply tag filter if specified
@@ -166,27 +260,13 @@ export async function fetchProducts(params?: FetchProductsParams): Promise<ApiPr
       });
     }
 
-    // Apply pagination only when a limit is explicitly provided
-    const page = params?.page || 1;
-    const limit = params?.limit;
-    const paginatedProducts = typeof limit === 'number'
-      ? allProducts.slice((page - 1) * limit, (page - 1) * limit + limit)
-      : allProducts;
-    const totalPages = typeof limit === 'number'
-      ? Math.ceil(allProducts.length / limit)
-      : 1;
+    allProducts = sortApiProducts(allProducts, params?.sortBy);
+    const { items, pagination } = paginateApiProducts(allProducts, page, limit);
 
     return {
       success: true,
-      data: paginatedProducts,
-      pagination: {
-        page,
-        limit: limit ?? allProducts.length,
-        total: allProducts.length,
-        totalPages,
-        hasNextPage: typeof limit === 'number' ? page < totalPages : false,
-        hasPreviousPage: typeof limit === 'number' ? page > 1 : false,
-      },
+      data: items,
+      pagination,
     };
   } catch (error: any) {
     console.warn('Shopify products unavailable:', error.message);
@@ -263,6 +343,116 @@ export async function fetchProductsByCategory(
 
       return true;
     });
+  } catch (error: any) {
+    const isBuildTime = typeof window === 'undefined' && process.env.NODE_ENV !== 'development';
+    if (isBuildTime) return [];
+    throw error;
+  }
+}
+
+interface FetchProductsByCategoryPageParams {
+  categorySlug: string;
+  page?: number;
+  limit?: number;
+  sortBy?: CatalogSortOption;
+  requiredTags?: string[];
+  requiredCategories?: string[];
+}
+
+export async function fetchProductsByCategoryPage(
+  params: FetchProductsByCategoryPageParams
+): Promise<ApiProductsResponse> {
+  const page = Math.max(1, params.page || 1);
+  const limit = Math.max(1, params.limit || 24);
+
+  try {
+    const hasExtraFilters =
+      (params.requiredTags && params.requiredTags.length > 0) ||
+      (params.requiredCategories && params.requiredCategories.length > 0);
+
+    if (!hasExtraFilters && canUseSourcePagination(params.sortBy)) {
+      const response = await fetchShopifyProductsByCollectionMergedPage(params.categorySlug, {
+        page,
+        limit,
+        sortBy: params.sortBy,
+      });
+      const totalPages = Math.ceil(response.total / limit);
+      return {
+        success: true,
+        data: response.products,
+        pagination: {
+          page,
+          limit,
+          total: response.total,
+          totalPages,
+          hasNextPage: page < totalPages,
+          hasPreviousPage: page > 1,
+        },
+      };
+    }
+
+    let products = await fetchAllShopifyProductsByCollectionMerged(params.categorySlug);
+
+    if (params.requiredTags && params.requiredTags.length > 0) {
+      products = products.filter((product) => {
+        const productTagSlugs = product.tags.map((tag) => tag.slug);
+        return params.requiredTags!.every((tag) => productTagSlugs.includes(tag));
+      });
+    }
+
+    if (params.requiredCategories && params.requiredCategories.length > 0) {
+      products = products.filter((product) => {
+        const productCategorySlugs = product.categories.map((category) => category.slug);
+        return params.requiredCategories!.every((category) => productCategorySlugs.includes(category));
+      });
+    }
+
+    products = sortApiProducts(products, params.sortBy);
+    const { items, pagination } = paginateApiProducts(products, page, limit);
+
+    return {
+      success: true,
+      data: items,
+      pagination,
+    };
+  } catch (error: any) {
+    const isBuildTime = typeof window === 'undefined' && process.env.NODE_ENV !== 'development';
+    if (isBuildTime) {
+      return {
+        success: true,
+        data: [],
+        pagination: {
+          page,
+          limit,
+          total: 0,
+          totalPages: 0,
+          hasNextPage: false,
+          hasPreviousPage: false,
+        },
+      };
+    }
+    throw error;
+  }
+}
+
+export async function fetchProductsForCollectionSlugs(
+  categorySlugs: string[]
+): Promise<ApiProduct[]> {
+  const uniqueCategorySlugs = Array.from(new Set(categorySlugs));
+
+  try {
+    const productsByCollection = await Promise.all(
+      uniqueCategorySlugs.map((categorySlug) => fetchAllShopifyProductsByCollectionMerged(categorySlug))
+    );
+
+    const dedupedProducts = new Map<string, ApiProduct>();
+    for (const products of productsByCollection) {
+      for (const product of products) {
+        dedupedProducts.set(product.id, product);
+      }
+    }
+
+    return Array.from(dedupedProducts.values());
   } catch (error: any) {
     const isBuildTime = typeof window === 'undefined' && process.env.NODE_ENV !== 'development';
     if (isBuildTime) return [];

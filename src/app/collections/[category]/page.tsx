@@ -1,6 +1,17 @@
 import { notFound } from 'next/navigation';
 import { Header, Footer, FAQ } from '@/components';
-import { fetchCategories, fetchProducts, fetchProductsByCategory, transformProduct, extractFilterOptions } from '@/lib/api';
+import {
+  fetchCategories,
+  fetchProducts,
+  fetchProductsByCategoryPage,
+  fetchProductsForCollectionSlugs,
+  transformProduct,
+  extractFilterOptions,
+  paginateApiProducts,
+  sortApiProducts,
+  CatalogSortOption,
+  PaginationMeta,
+} from '@/lib/api';
 import { Product, ApiProduct } from '@/types';
 import CategoryHero from '@/components/collection/CategoryHero';
 import ProductGridWithFilters from '@/components/collection/ProductGridWithFilters';
@@ -17,6 +28,7 @@ import {
 
 interface PageProps {
   params: Promise<{ category: string }>;
+  searchParams?: Promise<{ page?: string; sort?: string }>;
 }
 
 function matchesCustomCollection(product: ApiProduct, categorySlug: string) {
@@ -102,8 +114,12 @@ export async function generateMetadata({ params }: PageProps) {
   };
 }
 
-export default async function CollectionPage({ params }: PageProps) {
+export default async function CollectionPage({ params, searchParams }: PageProps) {
   const { category: categorySlug } = await params;
+  const resolvedSearchParams = await (searchParams ?? Promise.resolve({} as { page?: string; sort?: string }));
+  const page = Math.max(1, Number(resolvedSearchParams.page) || 1);
+  const sortBy = (resolvedSearchParams.sort as CatalogSortOption) || 'best-selling';
+  const pageSize = 24;
 
   // Map frontend slug to backend slug if needed
   const mapCategorySlug = (slug: string): string => {
@@ -153,11 +169,34 @@ export default async function CollectionPage({ params }: PageProps) {
   // Fetch products if we have a backend category
   let apiProducts: ApiProduct[] = [];
   let products: Product[] = [];
+  let pagination: PaginationMeta = {
+    page,
+    limit: pageSize,
+    total: 0,
+    totalPages: 0,
+    hasNextPage: false,
+    hasPreviousPage: false,
+  };
 
   if (hasCustomFilter) {
     try {
-      const response = await fetchProducts();
-      apiProducts = response.data.filter((product) => matchesCustomCollection(product, categorySlug));
+      const customFilter = CUSTOM_COLLECTION_FILTERS[categorySlug];
+      const canUseScopedCollectionFetch =
+        Boolean(customFilter?.categorySlugsAny?.length) &&
+        !customFilter?.tagsAny?.length &&
+        !customFilter?.tagsAll?.length &&
+        !customFilter?.productSlugsAny?.length &&
+        !customFilter?.categorySlugsAll?.length;
+
+      const sourceProducts = canUseScopedCollectionFetch
+        ? await fetchProductsForCollectionSlugs(customFilter!.categorySlugsAny!)
+        : (await fetchProducts()).data;
+
+      const filteredProducts = sourceProducts.filter((product) => matchesCustomCollection(product, categorySlug));
+      const sortedProducts = sortApiProducts(filteredProducts, sortBy);
+      const paginated = paginateApiProducts(sortedProducts, page, pageSize);
+      apiProducts = paginated.items;
+      pagination = paginated.pagination;
       products = apiProducts.map(transformProduct);
     } catch (error) {
       if (process.env.NODE_ENV === 'development') {
@@ -169,8 +208,17 @@ export default async function CollectionPage({ params }: PageProps) {
       // Get required tags and categories for this navigation slug
       const requiredTags = NAVIGATION_TAG_FILTERS[categorySlug];
       const requiredCategories = NAVIGATION_CATEGORY_FILTERS[categorySlug];
-      
-      apiProducts = await fetchProductsByCategory(backendSlug, requiredTags, requiredCategories);
+
+      const response = await fetchProductsByCategoryPage({
+        categorySlug: backendSlug,
+        page,
+        limit: pageSize,
+        sortBy,
+        requiredTags,
+        requiredCategories,
+      });
+      apiProducts = response.data;
+      pagination = response.pagination ?? pagination;
       products = apiProducts.map(transformProduct);
     } catch (error) {
       // Silently fail during build - backend may be unavailable
@@ -184,7 +232,7 @@ export default async function CollectionPage({ params }: PageProps) {
   const filterOptions = extractFilterOptions(apiProducts);
 
   // Check if we should show coming soon (no backend category or no products)
-  const showComingSoon = (!backendCategory && !hasCustomFilter) || products.length === 0;
+  const showComingSoon = (!backendCategory && !hasCustomFilter) || pagination.total === 0;
 
   // Pre-select motorization when browsing motorised collections
   const preselectedMotorization =
@@ -202,7 +250,7 @@ export default async function CollectionPage({ params }: PageProps) {
           title={categoryName}
           slug={categorySlug}
           description={categoryDescription}
-          productCount={products.length}
+          productCount={pagination.total}
         />
 
         <div className="flex flex-col gap-[32px] items-start max-w-[1280px] px-[24px] py-[40px] mx-auto w-full">
@@ -214,6 +262,9 @@ export default async function CollectionPage({ params }: PageProps) {
               filterOptions={filterOptions}
               categoryName={categoryName}
               preselectedMotorization={preselectedMotorization}
+              pagination={pagination}
+              currentSort={sortBy}
+              basePath={`/collections/${categorySlug}`}
             />
           )}
         </div>

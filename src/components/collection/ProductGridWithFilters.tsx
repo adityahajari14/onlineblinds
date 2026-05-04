@@ -1,8 +1,10 @@
-﻿'use client';
+'use client';
 
-import { useState, useMemo } from 'react';
+import { useMemo } from 'react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Product } from '@/types';
 import { ProductCard } from '@/components/product';
+import type { CatalogSortOption, PaginationMeta } from '@/lib/api';
 
 interface FilterOptions {
   colors: string[];
@@ -14,105 +16,89 @@ interface ProductGridWithFiltersProps {
   filterOptions: FilterOptions;
   categoryName: string;
   preselectedMotorization?: boolean;
+  pagination?: PaginationMeta;
+  currentSort?: CatalogSortOption;
+  basePath?: string;
 }
 
-type SortOption = 'best-selling' | 'price-low' | 'price-high' | 'name-az' | 'name-za';
-
-export default function ProductGridWithFilters({ 
-  products, 
+export default function ProductGridWithFilters({
+  products,
   preselectedMotorization = false,
+  pagination,
+  currentSort = 'best-selling',
+  basePath,
 }: ProductGridWithFiltersProps) {
-  // Filter state
-  const [selectedColors, setSelectedColors] = useState<string[]>([]);
-  const [selectedPatterns, setSelectedPatterns] = useState<string[]>([]);
-  const [sortBy, setSortBy] = useState<SortOption>('best-selling');
-  const [visibleCount, setVisibleCount] = useState(24);
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const activePath = basePath || pathname;
 
-  // Filter and sort products
-  const filteredProducts = useMemo(() => {
-    let result = [...products];
+  const page = pagination?.page || 1;
+  const total = pagination?.total ?? products.length;
+  const totalPages = pagination?.totalPages ?? (total > 0 ? 1 : 0);
+  const pageSize = pagination?.limit ?? products.length;
+  const start = total === 0 ? 0 : (page - 1) * pageSize + 1;
+  const end = total === 0 ? 0 : start + products.length - 1;
 
-    // Filter by colors (check product name for color keywords)
-    if (selectedColors.length > 0) {
-      result = result.filter((product) => {
-        const productName = product.name.toLowerCase();
-        return selectedColors.some((color) => productName.includes(color));
-      });
+  const sortOptions: Array<{ value: CatalogSortOption; label: string }> = useMemo(() => [
+    { value: 'best-selling', label: 'Best Selling' },
+    { value: 'price-low', label: 'Price: Low to High' },
+    { value: 'price-high', label: 'Price: High to Low' },
+    { value: 'name-az', label: 'Name: A to Z' },
+    { value: 'name-za', label: 'Name: Z to A' },
+  ], []);
+
+  const navigateWithParams = (nextPage: number, nextSort: CatalogSortOption) => {
+    const params = new URLSearchParams(searchParams.toString());
+
+    if (nextPage > 1) {
+      params.set('page', String(nextPage));
+    } else {
+      params.delete('page');
     }
 
-    // Filter by patterns (check product name for pattern keywords)
-    if (selectedPatterns.length > 0) {
-      result = result.filter((product) => {
-        const productName = product.name.toLowerCase();
-        return selectedPatterns.some((pattern) => productName.includes(pattern));
-      });
+    if (nextSort !== 'best-selling') {
+      params.set('sort', nextSort);
+    } else {
+      params.delete('sort');
     }
 
-    // Sort
-    switch (sortBy) {
-      case 'price-low':
-        result.sort((a, b) => a.price - b.price);
-        break;
-      case 'price-high':
-        result.sort((a, b) => b.price - a.price);
-        break;
-      case 'name-az':
-        result.sort((a, b) => a.name.localeCompare(b.name));
-        break;
-      case 'name-za':
-        result.sort((a, b) => b.name.localeCompare(a.name));
-        break;
-      default:
-        // best-selling - keep original order
-        break;
-    }
-
-    return result;
-  }, [products, selectedColors, selectedPatterns, sortBy]);
-
-  const displayedProducts = filteredProducts.slice(0, visibleCount);
-  const hasMore = visibleCount < filteredProducts.length;
-
-  const clearAllFilters = () => {
-    setSelectedColors([]);
-    setSelectedPatterns([]);
-    setVisibleCount(24);
+    const queryString = params.toString();
+    router.push(queryString ? `${activePath}?${queryString}` : activePath, { scroll: false });
   };
 
-  const hasActiveFilters = selectedColors.length > 0 || selectedPatterns.length > 0;
+  const handleSortChange = (nextSort: CatalogSortOption) => {
+    navigateWithParams(1, nextSort);
+  };
+
+  const hasProducts = products.length > 0;
 
   return (
     <div className="w-full">
-      {/* Toolbar */}
-      <div className="flex flex-wrap items-center justify-between gap-[12px] mb-[32px]">
-        {/* Product Count */}
-        <div>
-          <div className="font-jost text-[14px] font-normal text-muted leading-[20px]">
-            {filteredProducts.length} product{filteredProducts.length !== 1 ? 's' : ''}
-          </div>
+      <div className="mb-[32px] flex flex-wrap items-center justify-between gap-[12px]">
+        <div className="font-jost text-[14px] font-normal leading-[20px] text-muted">
+          {total} product{total !== 1 ? 's' : ''}
         </div>
 
-        {/* Sort Dropdown */}
-        <div className="flex gap-[12px] items-center">
-          <div className="font-jost text-[14px] font-normal text-muted leading-[20px]">
+        <div className="flex items-center gap-[12px]">
+          <div className="font-jost text-[14px] font-normal leading-[20px] text-muted">
             Sort by:
           </div>
           <select
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as SortOption)}
-            className="h-[36px] w-[180px] rounded-[4.4px] border border-border bg-surface px-[13px] py-[9px] font-jost text-[14px] leading-[20px] font-normal text-foreground shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)]"
+            value={currentSort}
+            onChange={(event) => handleSortChange(event.target.value as CatalogSortOption)}
+            className="h-[36px] w-[180px] rounded-[4.4px] border border-border bg-surface px-[13px] py-[9px] font-jost text-[14px] font-normal leading-[20px] text-foreground shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)]"
           >
-            <option value="best-selling">Best Selling</option>
-            <option value="price-low">Price: Low to High</option>
-            <option value="price-high">Price: High to Low</option>
-            <option value="name-az">Name: A to Z</option>
-            <option value="name-za">Name: Z to A</option>
+            {sortOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
           </select>
         </div>
       </div>
 
-      {/* Products Grid */}
-      {displayedProducts.length === 0 ? (
+      {!hasProducts ? (
         <div className="rounded-[12px] border border-border bg-surface py-16 text-center">
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-surface-soft">
             <svg className="h-8 w-8 text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -120,20 +106,12 @@ export default function ProductGridWithFilters({
             </svg>
           </div>
           <h3 className="mb-2 font-jost text-[16px] font-medium text-foreground">No products found</h3>
-          <p className="mb-4 font-jost text-[14px] font-normal text-muted">Try adjusting your filters to find what you&apos;re looking for.</p>
-          {hasActiveFilters && (
-            <button
-              onClick={clearAllFilters}
-              className="rounded-[4.4px] bg-primary px-4 py-2 font-jost text-[14px] font-medium text-white hover:bg-primary-dark"
-            >
-              Clear All Filters
-            </button>
-          )}
+          <p className="font-jost text-[14px] font-normal text-muted">Try adjusting your filters to find what you&apos;re looking for.</p>
         </div>
       ) : (
         <>
-          <div className="gap-x-[24px] gap-y-[24px] grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 w-full">
-            {displayedProducts.map((product) => (
+          <div className="grid w-full grid-cols-2 gap-x-[24px] gap-y-[24px] md:grid-cols-3 lg:grid-cols-4">
+            {products.map((product) => (
               <ProductCard
                 key={product.id}
                 product={{
@@ -145,25 +123,39 @@ export default function ProductGridWithFilters({
             ))}
           </div>
 
-          {/* Load More */}
-          {hasMore && (
-            <div className="flex justify-center pt-8 mt-8">
-              <button
-                onClick={() => setVisibleCount((prev) => prev + 24)}
-                className="rounded-[4.4px] border border-border bg-surface px-8 py-3 font-jost text-[14px] font-medium text-foreground transition-colors hover:bg-foreground hover:text-white"
-              >
-                Load More Products
-              </button>
+          <div className="mt-6 flex flex-col items-center justify-between gap-4 border-t border-border pt-6 text-center md:flex-row">
+            <div className="font-jost text-[14px] font-normal text-muted">
+              Showing {start}-{end} of {total} products
             </div>
-          )}
 
-          {/* Results Info */}
-          <div className="mt-4 text-center font-jost text-[14px] font-normal text-muted">
-            Showing {displayedProducts.length} of {filteredProducts.length} products
+            {totalPages > 1 && (
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => navigateWithParams(page - 1, currentSort)}
+                  disabled={!pagination?.hasPreviousPage}
+                  className="rounded-[4.4px] border border-border bg-surface px-4 py-2 font-jost text-[14px] font-medium text-foreground transition-colors hover:bg-foreground hover:text-white disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-surface disabled:hover:text-foreground"
+                >
+                  Previous
+                </button>
+
+                <div className="min-w-[92px] font-jost text-[14px] font-normal text-muted">
+                  Page {page} of {totalPages}
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => navigateWithParams(page + 1, currentSort)}
+                  disabled={!pagination?.hasNextPage}
+                  className="rounded-[4.4px] border border-border bg-surface px-4 py-2 font-jost text-[14px] font-medium text-foreground transition-colors hover:bg-foreground hover:text-white disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-surface disabled:hover:text-foreground"
+                >
+                  Next
+                </button>
+              </div>
+            )}
           </div>
         </>
       )}
     </div>
   );
 }
-

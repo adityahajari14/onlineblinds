@@ -70,9 +70,52 @@ interface StorefrontProductsResponse {
   };
 }
 
+interface StorefrontProductIdsResponse {
+  products: {
+    pageInfo: {
+      hasNextPage: boolean;
+      endCursor: string | null;
+    };
+    edges: Array<{ node: { id: string } }>;
+  };
+}
+
 interface StorefrontProductByHandleResponse {
   product: StorefrontProduct | null;
 }
+
+interface StorefrontCollectionProductsResponse {
+  collection: {
+    id: string;
+    handle: string;
+    title: string;
+    description: string | null;
+    products: {
+      pageInfo: {
+        hasNextPage: boolean;
+        endCursor: string | null;
+      };
+      edges: Array<{ node: StorefrontProduct }>;
+    };
+  } | null;
+}
+
+interface StorefrontCollectionProductIdsResponse {
+  collection: {
+    products: {
+      pageInfo: {
+        hasNextPage: boolean;
+        endCursor: string | null;
+      };
+      edges: Array<{ node: { id: string } }>;
+    };
+  } | null;
+}
+
+type StorefrontCollectionProductsConnection =
+  NonNullable<StorefrontCollectionProductsResponse['collection']>['products'];
+type StorefrontCollectionProductIdsConnection =
+  NonNullable<StorefrontCollectionProductIdsResponse['collection']>['products'];
 
 interface StorefrontCollectionsResponse {
   collections: {
@@ -154,8 +197,8 @@ const PRODUCT_FIELDS = `
 `;
 
 const PRODUCTS_QUERY = `
-  query Products($first: Int!, $after: String, $query: String) {
-    products(first: $first, after: $after, query: $query, sortKey: CREATED_AT, reverse: true) {
+  query Products($first: Int!, $after: String, $query: String, $sortKey: ProductSortKeys!, $reverse: Boolean!) {
+    products(first: $first, after: $after, query: $query, sortKey: $sortKey, reverse: $reverse) {
       pageInfo {
         hasNextPage
         endCursor
@@ -169,10 +212,66 @@ const PRODUCTS_QUERY = `
   }
 `;
 
+const PRODUCT_IDS_QUERY = `
+  query ProductIds($first: Int!, $after: String, $query: String, $sortKey: ProductSortKeys!, $reverse: Boolean!) {
+    products(first: $first, after: $after, query: $query, sortKey: $sortKey, reverse: $reverse) {
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
+      edges {
+        node {
+          id
+        }
+      }
+    }
+  }
+`;
+
 const PRODUCT_BY_HANDLE_QUERY = `
   query ProductByHandle($handle: String!) {
     product(handle: $handle) {
       ${PRODUCT_FIELDS}
+    }
+  }
+`;
+
+const COLLECTION_PRODUCTS_QUERY = `
+  query CollectionProducts($handle: String!, $first: Int!, $after: String, $sortKey: ProductCollectionSortKeys!, $reverse: Boolean!) {
+    collection(handle: $handle) {
+      id
+      handle
+      title
+      description
+      products(first: $first, after: $after, sortKey: $sortKey, reverse: $reverse) {
+        pageInfo {
+          hasNextPage
+          endCursor
+        }
+        edges {
+          node {
+            ${PRODUCT_FIELDS}
+          }
+        }
+      }
+    }
+  }
+`;
+
+const COLLECTION_PRODUCT_IDS_QUERY = `
+  query CollectionProductIds($handle: String!, $first: Int!, $after: String, $sortKey: ProductCollectionSortKeys!, $reverse: Boolean!) {
+    collection(handle: $handle) {
+      products(first: $first, after: $after, sortKey: $sortKey, reverse: $reverse) {
+        pageInfo {
+          hasNextPage
+          endCursor
+        }
+        edges {
+          node {
+            id
+          }
+        }
+      }
     }
   }
 `;
@@ -336,6 +435,86 @@ function mapStorefrontProduct(
   };
 }
 
+type CatalogSortOption = 'best-selling' | 'price-low' | 'price-high' | 'name-az' | 'name-za';
+
+interface PaginatedShopifyProductsParams {
+  page?: number;
+  limit?: number;
+  searchQuery?: string;
+  sortBy?: CatalogSortOption;
+}
+
+interface ShopifyPaginationResult {
+  products: ApiProduct[];
+  total: number;
+}
+
+interface CursorPageInfo {
+  hasNextPage: boolean;
+  endCursor: string | null;
+  edgeCount: number;
+}
+
+const countCache = new Map<string, { value: number; expiresAt: number }>();
+const COUNT_CACHE_TTL = 60_000;
+
+function getSortConfig(sortBy: CatalogSortOption = 'best-selling'): {
+  productSortKey: 'CREATED_AT' | 'PRICE' | 'TITLE';
+  collectionSortKey: 'CREATED' | 'PRICE' | 'TITLE';
+  reverse: boolean;
+} {
+  switch (sortBy) {
+    case 'price-low':
+      return { productSortKey: 'PRICE', collectionSortKey: 'PRICE', reverse: false };
+    case 'price-high':
+      return { productSortKey: 'PRICE', collectionSortKey: 'PRICE', reverse: true };
+    case 'name-az':
+      return { productSortKey: 'TITLE', collectionSortKey: 'TITLE', reverse: false };
+    case 'name-za':
+      return { productSortKey: 'TITLE', collectionSortKey: 'TITLE', reverse: true };
+    default:
+      return { productSortKey: 'CREATED_AT', collectionSortKey: 'CREATED', reverse: true };
+  }
+}
+
+async function getCachedCount(cacheKey: string, compute: () => Promise<number>): Promise<number> {
+  const cached = countCache.get(cacheKey);
+  if (cached && cached.expiresAt > Date.now()) {
+    return cached.value;
+  }
+
+  const value = await compute();
+  countCache.set(cacheKey, {
+    value,
+    expiresAt: Date.now() + COUNT_CACHE_TTL,
+  });
+  return value;
+}
+
+async function findCursorForPage(
+  page: number,
+  fetchPageInfo: (after: string | null) => Promise<CursorPageInfo>
+): Promise<string | null> {
+  if (page <= 1) {
+    return null;
+  }
+
+  let after: string | null = null;
+
+  for (let currentPage = 1; currentPage < page; currentPage += 1) {
+    const { hasNextPage, endCursor, edgeCount } = await fetchPageInfo(after);
+    if (edgeCount === 0 || !endCursor) {
+      return after;
+    }
+    after = endCursor;
+    if (!hasNextPage) {
+      break;
+    }
+  }
+
+  return after;
+}
+
 // ============================================
 // Public API Functions
 // ============================================
@@ -350,11 +529,14 @@ export async function fetchAllShopifyProducts(
   const allProducts: StorefrontProduct[] = [];
   let cursor: string | null = null;
   let hasNextPage = true;
+  const { productSortKey, reverse } = getSortConfig('best-selling');
 
   while (hasNextPage) {
     const variables: Record<string, unknown> = {
       first: 250,
       after: cursor,
+      sortKey: productSortKey,
+      reverse,
     };
 
     if (searchQuery) {
@@ -498,6 +680,183 @@ async function getMinimumPrices(): Promise<Record<string, number>> {
   return cachedMinimumPrices!;
 }
 
+async function countProducts(searchQuery?: string): Promise<number> {
+  const cacheKey = `products:${searchQuery || '__all__'}`;
+  return getCachedCount(cacheKey, async () => {
+    let total = 0;
+    let cursor: string | null = null;
+    let hasNextPage = true;
+    const { productSortKey, reverse } = getSortConfig('best-selling');
+
+    while (hasNextPage) {
+      const data: StorefrontProductIdsResponse = await storefrontFetch<StorefrontProductIdsResponse>(
+        PRODUCT_IDS_QUERY,
+        {
+          first: 250,
+          after: cursor,
+          query: searchQuery,
+          sortKey: productSortKey,
+          reverse,
+        }
+      );
+
+      total += data.products.edges.length;
+      hasNextPage = data.products.pageInfo.hasNextPage;
+      cursor = data.products.pageInfo.endCursor;
+    }
+
+    return total;
+  });
+}
+
+async function countCollectionProducts(handle: string): Promise<number> {
+  const cacheKey = `collection:${handle}`;
+  return getCachedCount(cacheKey, async () => {
+    let total = 0;
+    let cursor: string | null = null;
+    let hasNextPage = true;
+    const { collectionSortKey, reverse } = getSortConfig('best-selling');
+
+    while (hasNextPage) {
+      const data: StorefrontCollectionProductIdsResponse = await storefrontFetch<StorefrontCollectionProductIdsResponse>(
+        COLLECTION_PRODUCT_IDS_QUERY,
+        {
+          handle,
+          first: 250,
+          after: cursor,
+          sortKey: collectionSortKey,
+          reverse,
+        }
+      );
+
+      const connection: StorefrontCollectionProductIdsConnection | undefined =
+        data.collection?.products;
+      if (!connection) {
+        return 0;
+      }
+
+      total += connection.edges.length;
+      hasNextPage = connection.pageInfo.hasNextPage;
+      cursor = connection.pageInfo.endCursor;
+    }
+
+    return total;
+  });
+}
+
+async function fetchStorefrontProductsPage(params: PaginatedShopifyProductsParams): Promise<StorefrontProduct[]> {
+  const page = Math.max(1, params.page || 1);
+  const limit = Math.max(1, params.limit || 24);
+  const { productSortKey, reverse } = getSortConfig(params.sortBy);
+
+  const cursor = await findCursorForPage(page, async (after) => {
+    const data: StorefrontProductIdsResponse = await storefrontFetch<StorefrontProductIdsResponse>(
+      PRODUCT_IDS_QUERY,
+      {
+        first: limit,
+        after,
+        query: params.searchQuery,
+        sortKey: productSortKey,
+        reverse,
+      }
+    );
+
+    return {
+      hasNextPage: data.products.pageInfo.hasNextPage,
+      endCursor: data.products.pageInfo.endCursor,
+      edgeCount: data.products.edges.length,
+    };
+  });
+
+  const data = await storefrontFetch<StorefrontProductsResponse>(
+    PRODUCTS_QUERY,
+    {
+      first: limit,
+      after: cursor,
+      query: params.searchQuery,
+      sortKey: productSortKey,
+      reverse,
+    }
+  );
+
+  return data.products.edges.map((edge) => edge.node);
+}
+
+async function fetchAllStorefrontProductsByCollection(handle: string): Promise<StorefrontProduct[]> {
+  const allProducts: StorefrontProduct[] = [];
+  let cursor: string | null = null;
+  let hasNextPage = true;
+  const { collectionSortKey, reverse } = getSortConfig('best-selling');
+
+  while (hasNextPage) {
+    const data: StorefrontCollectionProductsResponse = await storefrontFetch<StorefrontCollectionProductsResponse>(
+      COLLECTION_PRODUCTS_QUERY,
+      {
+        handle,
+        first: 250,
+        after: cursor,
+        sortKey: collectionSortKey,
+        reverse,
+      }
+    );
+
+    const connection: StorefrontCollectionProductsConnection | undefined =
+      data.collection?.products;
+    if (!connection) {
+      return [];
+    }
+
+    allProducts.push(...connection.edges.map((edge: { node: StorefrontProduct }) => edge.node));
+    hasNextPage = connection.pageInfo.hasNextPage;
+    cursor = connection.pageInfo.endCursor;
+  }
+
+  return allProducts;
+}
+
+async function fetchStorefrontProductsPageByCollection(
+  handle: string,
+  params: PaginatedShopifyProductsParams
+): Promise<StorefrontProduct[]> {
+  const page = Math.max(1, params.page || 1);
+  const limit = Math.max(1, params.limit || 24);
+  const { collectionSortKey, reverse } = getSortConfig(params.sortBy);
+
+  const cursor = await findCursorForPage(page, async (after) => {
+    const data: StorefrontCollectionProductIdsResponse = await storefrontFetch<StorefrontCollectionProductIdsResponse>(
+      COLLECTION_PRODUCT_IDS_QUERY,
+      {
+        handle,
+        first: limit,
+        after,
+        sortKey: collectionSortKey,
+        reverse,
+      }
+    );
+
+    const connection: StorefrontCollectionProductIdsConnection | undefined =
+      data.collection?.products;
+    return {
+      hasNextPage: connection?.pageInfo.hasNextPage ?? false,
+      endCursor: connection?.pageInfo.endCursor ?? null,
+      edgeCount: connection?.edges.length ?? 0,
+    };
+  });
+
+  const data: StorefrontCollectionProductsResponse = await storefrontFetch<StorefrontCollectionProductsResponse>(
+    COLLECTION_PRODUCTS_QUERY,
+    {
+      handle,
+      first: limit,
+      after: cursor,
+      sortKey: collectionSortKey,
+      reverse,
+    }
+  );
+
+  return (data.collection?.products.edges || []).map((edge: { node: StorefrontProduct }) => edge.node);
+}
+
 /**
  * Fetch all products from Shopify, merged with backend minimum prices.
  * This is the primary product fetch function.
@@ -513,6 +872,50 @@ export async function fetchShopifyProductsMerged(
   return sfProducts.map((sfProduct) =>
     mapStorefrontProduct(sfProduct, minimumPrices)
   );
+}
+
+export async function fetchShopifyProductsMergedPage(
+  params: PaginatedShopifyProductsParams
+): Promise<ShopifyPaginationResult> {
+  const [sfProducts, minimumPrices, total] = await Promise.all([
+    fetchStorefrontProductsPage(params),
+    getMinimumPrices(),
+    countProducts(params.searchQuery),
+  ]);
+
+  return {
+    products: sfProducts.map((sfProduct) => mapStorefrontProduct(sfProduct, minimumPrices)),
+    total,
+  };
+}
+
+export async function fetchAllShopifyProductsByCollectionMerged(
+  handle: string
+): Promise<ApiProduct[]> {
+  const [sfProducts, minimumPrices] = await Promise.all([
+    fetchAllStorefrontProductsByCollection(handle),
+    getMinimumPrices(),
+  ]);
+
+  return sfProducts.map((sfProduct) =>
+    mapStorefrontProduct(sfProduct, minimumPrices)
+  );
+}
+
+export async function fetchShopifyProductsByCollectionMergedPage(
+  handle: string,
+  params: PaginatedShopifyProductsParams
+): Promise<ShopifyPaginationResult> {
+  const [sfProducts, minimumPrices, total] = await Promise.all([
+    fetchStorefrontProductsPageByCollection(handle, params),
+    getMinimumPrices(),
+    countCollectionProducts(handle),
+  ]);
+
+  return {
+    products: sfProducts.map((sfProduct) => mapStorefrontProduct(sfProduct, minimumPrices)),
+    total,
+  };
 }
 
 /**

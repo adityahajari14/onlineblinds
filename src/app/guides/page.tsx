@@ -43,10 +43,10 @@ const guides = [
     ],
   },
   {
-    category: 'Dual Zebra Shades',
+    category: 'Day and Night Blinds',
     items: [
       {
-        title: 'Dual Zebra Shades – Measurement Guide',
+        title: 'Day and Night Blinds – Measurement Guide',
         file: '/guides/dual_zebra_measurement_guide_onlineblinds.pdf',
         type: 'Measuring',
       },
