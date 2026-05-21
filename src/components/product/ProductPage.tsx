@@ -1550,11 +1550,12 @@ const ProductPage = ({
                                   : 'border-border hover:border-border-strong'
                                   }`}
                               >
-                                {option.image && (
-                                  <div className="w-full aspect-square relative mb-1.5 rounded overflow-hidden shadow-sm">
-                                    <div className={`w-full h-full ${option.id === 'white' ? 'bg-white border border-gray-100' : option.id === 'cream' ? 'bg-[#FFFDD0]' : 'bg-[#232833]'}`}></div>
-                                  </div>
-                                )}
+                                <div className="w-full aspect-square relative mb-1.5 rounded overflow-hidden shadow-sm">
+                                  <div
+                                    className={`w-full h-full ${option.id === 'white' ? 'border border-gray-100' : ''}`}
+                                    style={{ backgroundColor: option.hex }}
+                                  />
+                                </div>
                                 <span className="text-xs font-medium text-center text-foreground">{option.name}</span>
                               </button>
                             ))}
@@ -1576,11 +1577,12 @@ const ProductPage = ({
                                   : 'border-border hover:border-border-strong'
                                   }`}
                               >
-                                {option.image && (
-                                  <div className="w-full aspect-square relative mb-1.5 rounded overflow-hidden shadow-sm">
-                                    <div className={`w-full h-full ${option.id === 'white' ? 'bg-white border border-gray-100' : 'bg-[#5a6780]'}`}></div>
-                                  </div>
-                                )}
+                                <div className="w-full aspect-square relative mb-1.5 rounded overflow-hidden shadow-sm">
+                                  <div
+                                    className={`w-full h-full ${option.id === 'white' ? 'border border-gray-100' : ''}`}
+                                    style={{ backgroundColor: option.hex }}
+                                  />
+                                </div>
                                 <span className="text-xs font-medium text-center text-foreground">{option.name}</span>
                               </button>
                             ))}

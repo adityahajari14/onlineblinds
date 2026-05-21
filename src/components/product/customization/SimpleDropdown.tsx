@@ -10,6 +10,7 @@ interface DropdownOption {
   name: string;
   price?: number;
   image?: string;
+  hex?: string;
 }
 
 interface SimpleDropdownProps {
@@ -66,14 +67,20 @@ const DropdownPortal = ({
             onMouseEnter={(event) => option.image && setHoveredPreview({ name: option.name, image: option.image, anchorRect: event.currentTarget.getBoundingClientRect() })}
             onMouseLeave={() => setHoveredPreview(null)}
           >
-            {option.image && (
+            {option.hex ? (
+              <div
+                className={`w-10 h-10 rounded-md shrink-0 border ${option.hex.toLowerCase() === '#ffffff' ? 'border-[#cfd6e2]' : 'border-[#d9dfeb]'}`}
+                style={{ backgroundColor: option.hex }}
+                aria-hidden="true"
+              />
+            ) : option.image ? (
               <div
                 className="w-10 h-10 rounded-md overflow-hidden shrink-0 border border-[#d9dfeb] bg-[#e7eef8] transition-colors"
                 aria-hidden="true"
               >
                 <Image src={option.image} alt={option.name} width={40} height={40} className="object-cover w-full h-full" />
               </div>
-            )}
+            ) : null}
 
             <button
               type="button"
@@ -163,11 +170,17 @@ const SimpleDropdown = ({ label, options, selectedValue, onChange, placeholder =
         aria-label={`Select ${label}, currently ${selectedOption?.name || placeholder}`}
       >
         <div className="flex items-center gap-3 flex-1 min-w-0">
-          {selectedOption?.image && (
+          {selectedOption?.hex ? (
+            <div
+              className={`w-8 h-8 rounded-md shrink-0 border ${selectedOption.hex.toLowerCase() === '#ffffff' ? 'border-[#cfd6e2]' : 'border-[#d9dfeb]'}`}
+              style={{ backgroundColor: selectedOption.hex }}
+              aria-hidden="true"
+            />
+          ) : selectedOption?.image ? (
             <div className="w-8 h-8 rounded-md overflow-hidden shrink-0 border border-[#d9dfeb] bg-[#e7eef8]">
               <Image src={selectedOption.image} alt={selectedOption.name} width={32} height={32} className="object-cover w-full h-full" />
             </div>
-          )}
+          ) : null}
           <span className="text-[#1f2a44] font-medium truncate">
             {selectedOption ? selectedOption.name : placeholder}
           </span>
