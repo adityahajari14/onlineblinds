@@ -190,6 +190,19 @@ export const CartProvider = ({ children }: CartProviderProps) => {
     router.push('/cart');
   };
 
+  const updateCartItem = (itemId: string, product: Product, configuration: ProductConfiguration) => {
+    const updatedItems = cart.items.map((item) =>
+      item.id === itemId
+        ? {
+            ...item,
+            product,
+            configuration,
+          }
+        : item
+    );
+    applyCartItems(updatedItems);
+  };
+
   const removeFromCart = (itemId: string) => {
     const updatedItems = cart.items.filter((item) => item.id !== itemId);
     applyCartItems(updatedItems);
@@ -218,7 +231,7 @@ export const CartProvider = ({ children }: CartProviderProps) => {
 
   return (
     <CartContext.Provider
-      value={{ cart, addToCart, removeFromCart, updateQuantity, clearCart }}
+      value={{ cart, addToCart, updateCartItem, removeFromCart, updateQuantity, clearCart }}
     >
       {children}
     </CartContext.Provider>

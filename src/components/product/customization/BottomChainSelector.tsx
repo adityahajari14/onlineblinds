@@ -24,6 +24,12 @@ const BottomChainSelector = ({ options, selectedChain, onChainChange }: BottomCh
     const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0, width: 0 });
     const buttonRef = useRef<HTMLButtonElement>(null);
 
+    useEffect(() => {
+        if (!isOpen) {
+            setHoveredPreview(null);
+        }
+    }, [isOpen]);
+
     // Update menu position
     useEffect(() => {
         if (!isOpen || !buttonRef.current) return;
@@ -66,6 +72,10 @@ const BottomChainSelector = ({ options, selectedChain, onChainChange }: BottomCh
     }, [isOpen]);
 
     const selectedOption = options.find(opt => opt.id === selectedChain);
+    const closeDropdown = () => {
+        setHoveredPreview(null);
+        setIsOpen(false);
+    };
 
     return (
         <div className="flex flex-col gap-4">
@@ -102,7 +112,7 @@ const BottomChainSelector = ({ options, selectedChain, onChainChange }: BottomCh
             <PortalDropdownMenu
                 isOpen={isOpen}
                 menuPosition={menuPosition}
-                onClose={() => setIsOpen(false)}
+                onClose={closeDropdown}
             >
                 {options.map((option) => (
                     <div
@@ -132,8 +142,9 @@ const BottomChainSelector = ({ options, selectedChain, onChainChange }: BottomCh
                         <button
                             type="button"
                             onClick={() => {
+                                setHoveredPreview(null);
                                 onChainChange(option.id);
-                                setIsOpen(false);
+                                closeDropdown();
                             }}
                             className="grow min-w-0 text-left"
                         >

@@ -24,6 +24,12 @@ const WrappedCassetteSelector = ({ options, selectedOption, onOptionChange }: Wr
     const buttonRef = useRef<HTMLButtonElement>(null);
 
     useEffect(() => {
+        if (!isOpen) {
+            setHoveredPreview(null);
+        }
+    }, [isOpen]);
+
+    useEffect(() => {
         if (isOpen && buttonRef.current) {
             const updateMenuPosition = () => {
                 if (buttonRef.current) {
@@ -52,6 +58,10 @@ const WrappedCassetteSelector = ({ options, selectedOption, onOptionChange }: Wr
     const desiredWidth = Math.max(menuPosition.width, 340);
     const dropdownWidth = Math.min(desiredWidth, Math.max(280, viewportWidth - 24));
     const dropdownLeft = Math.max(12, Math.min(menuPosition.left, viewportWidth - dropdownWidth - 12));
+    const closeDropdown = () => {
+        setHoveredPreview(null);
+        setIsOpen(false);
+    };
 
     return (
         <div className="flex flex-col gap-4">
@@ -84,7 +94,7 @@ const WrappedCassetteSelector = ({ options, selectedOption, onOptionChange }: Wr
                     <>
                         <div
                             className="fixed inset-0 z-[99998]"
-                            onClick={() => setIsOpen(false)}
+                            onClick={closeDropdown}
                         />
                         <div
                             className="fixed z-[99999] bg-white border border-[#d9dfeb] rounded-[12px] shadow-xl max-h-80 overflow-y-auto"
@@ -101,8 +111,9 @@ const WrappedCassetteSelector = ({ options, selectedOption, onOptionChange }: Wr
                                 key={option.id}
                                 type="button"
                                 onClick={() => {
+                                    setHoveredPreview(null);
                                     onOptionChange(option.id);
-                                    setIsOpen(false);
+                                    closeDropdown();
                                 }}
                                 onMouseEnter={(event) => option.image && setHoveredPreview({ name: option.name, image: option.image, anchorRect: event.currentTarget.getBoundingClientRect() })}
                                 onMouseLeave={() => setHoveredPreview(null)}

@@ -281,8 +281,8 @@ export default function CategoryInfoSection({ categorySlug, productTags }: Categ
               </h2>
               <p className="mt-3 max-w-3xl text-sm leading-relaxed text-muted md:text-base">
                 Every blind is backed by manufacturer support. For assistance, contact{' '}
-                <a href="mailto:enquiries@onlineblinds.com" className="font-semibold text-primary hover:underline">
-                  enquiries@onlineblinds.com
+                <a href="mailto:sales@onlineblindsexpress.co.uk" className="font-semibold text-primary hover:underline">
+                  sales@onlineblindsexpress.co.uk
                 </a>
                 . Photos may be required for claims processing.
               </p>

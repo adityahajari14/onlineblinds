@@ -19,6 +19,12 @@ const HeadrailColourSelector = ({ options, selectedColour, onColourChange }: Hea
     const buttonRef = useRef<HTMLButtonElement>(null);
 
     useEffect(() => {
+        if (!isOpen) {
+            setHoveredPreview(null);
+        }
+    }, [isOpen]);
+
+    useEffect(() => {
         if (!isOpen || !buttonRef.current) return;
 
         const updateMenuPosition = () => {
@@ -57,6 +63,10 @@ const HeadrailColourSelector = ({ options, selectedColour, onColourChange }: Hea
     }, [isOpen]);
 
     const selectedOption = options.find((opt) => opt.id === selectedColour);
+    const closeDropdown = () => {
+        setHoveredPreview(null);
+        setIsOpen(false);
+    };
 
     return (
         <div className="flex flex-col gap-4">
@@ -120,7 +130,7 @@ const HeadrailColourSelector = ({ options, selectedColour, onColourChange }: Hea
             <PortalDropdownMenu
                 isOpen={isOpen}
                 menuPosition={menuPosition}
-                onClose={() => setIsOpen(false)}
+                onClose={closeDropdown}
             >
                 {options.map((option) => (
                     <div
@@ -146,8 +156,9 @@ const HeadrailColourSelector = ({ options, selectedColour, onColourChange }: Hea
                         <button
                             type="button"
                             onClick={() => {
+                                setHoveredPreview(null);
                                 onColourChange(option.id);
-                                setIsOpen(false);
+                                closeDropdown();
                             }}
                             className="grow min-w-0 text-left"
                         >

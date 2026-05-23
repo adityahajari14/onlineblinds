@@ -112,6 +112,9 @@ interface CustomizationModalProps {
   config: ProductConfiguration;
   setConfig: React.Dispatch<React.SetStateAction<ProductConfiguration>>;
   onClose: () => void;
+  mode?: 'add' | 'edit';
+  presentation?: 'page' | 'modal';
+  onSaveConfiguredProduct?: (product: Product, configuration: ProductConfiguration) => void;
 }
 
 const CustomizationModal = ({
@@ -119,6 +122,9 @@ const CustomizationModal = ({
   config,
   setConfig,
   onClose,
+  mode = 'add',
+  presentation = 'page',
+  onSaveConfiguredProduct,
 }: CustomizationModalProps) => {
   const { addToCart } = useCart();
   const isSpecialMotorized = useMemo(
@@ -854,7 +860,16 @@ const CustomizationModal = ({
       ? config.height === 0
       : config.width === 0 || config.height === 0;
 
-  const handleAddToCart = async () => {
+  const saveConfiguredProduct = (productWithPrice: Product) => {
+    if (mode === 'edit' && onSaveConfiguredProduct) {
+      onSaveConfiguredProduct(productWithPrice, config);
+      return;
+    }
+
+    addToCart(productWithPrice, config);
+  };
+
+  const handleSubmitConfiguration = async () => {
     // Validate dimensions are selected
     if (isSkylight && (!config.brand || !config.blindType)) {
       alert('Please select a brand and blind type before adding to cart.');
@@ -915,14 +930,14 @@ const CustomizationModal = ({
           ...product,
           price: validation.calculatedPrice,
         };
-        addToCart(productWithPrice, config);
+        saveConfiguredProduct(productWithPrice);
       } else {
         // Price matches, proceed with cart
         const productWithPrice = {
           ...product,
           price: totalPrice,
         };
-        addToCart(productWithPrice, config);
+        saveConfiguredProduct(productWithPrice);
       }
     } catch (error) {
       console.error('Price validation failed:', error);
@@ -931,14 +946,24 @@ const CustomizationModal = ({
         ...product,
         price: totalPrice,
       };
-      addToCart(productWithPrice, config);
+      saveConfiguredProduct(productWithPrice);
     } finally {
       setIsValidating(false);
     }
   };
 
+  const isModalPresentation = presentation === 'modal';
+  const rootClassName = isModalPresentation
+    ? 'bg-white relative z-20'
+    : 'bg-white min-h-screen relative z-20';
+  const bottomBarClassName = isModalPresentation
+    ? 'sticky bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-50'
+    : 'fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-50';
+  const submitLabel = mode === 'edit' ? 'Save Changes' : 'Add to Cart';
+  const validatingLabel = mode === 'edit' ? 'Saving Changes...' : 'Adding to Cart...';
+
   return (
-    <div className="bg-white min-h-screen relative z-20">
+    <div className={rootClassName}>
       {/* Breadcrumb */}
       <div className="px-4 md:px-6 lg:px-20 py-3 md:py-4 border-b border-gray-100">
         <div className="max-w-[1200px] mx-auto">
@@ -1420,7 +1445,7 @@ const CustomizationModal = ({
       </div>
 
       {/* Sticky Bottom Bar */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-50">
+      <div className={bottomBarClassName}>
         <div className="max-w-[1200px] mx-auto px-4 md:px-6 lg:px-20 py-3 md:py-4">
           <div className="flex items-center justify-between gap-4">
             <div>
@@ -1444,14 +1469,14 @@ const CustomizationModal = ({
               )}
             </div>
             <button
-              onClick={handleAddToCart}
+              onClick={handleSubmitConfiguration}
               disabled={isValidating || showMinPriceIndicator || isMeasurementOutOfRange || isRequiredCustomizationIncomplete || isPerfectFitShutterConfigurationIncomplete}
               className={`py-2.5 md:py-3 px-6 md:px-8 rounded text-sm md:text-base font-medium transition-colors ${isValidating || showMinPriceIndicator || isMeasurementOutOfRange || isRequiredCustomizationIncomplete || isPerfectFitShutterConfigurationIncomplete
                 ? 'bg-gray-400 text-white cursor-not-allowed'
                 : 'bg-[#335c99] text-white hover:bg-[#244779]'
                 }`}
             >
-              {isValidating ? 'Adding to Cart...' : isMeasurementOutOfRange ? 'Selected Size Not Available' : isPerfectFitShutterConfigurationIncomplete ? 'Complete Shutter Options' : 'Add to Cart'}
+              {isValidating ? validatingLabel : isMeasurementOutOfRange ? 'Selected Size Not Available' : isPerfectFitShutterConfigurationIncomplete ? 'Complete Shutter Options' : submitLabel}
             </button>
           </div>
         </div>

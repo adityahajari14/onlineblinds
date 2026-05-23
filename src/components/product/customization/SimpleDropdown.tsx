@@ -46,7 +46,15 @@ const DropdownPortal = ({
 
   return createPortal(
     <>
-      <div className="fixed inset-0" style={{ zIndex: 9998 }} onClick={onClose} aria-hidden="true" />
+      <div
+        className="fixed inset-0"
+        style={{ zIndex: 9998 }}
+        onClick={() => {
+          setHoveredPreview(null);
+          onClose();
+        }}
+        aria-hidden="true"
+      />
       <div
         className="fixed bg-white border border-[#d9dfeb] rounded-xl shadow-2xl overflow-hidden"
         style={{
@@ -85,6 +93,7 @@ const DropdownPortal = ({
             <button
               type="button"
               onClick={() => {
+                setHoveredPreview(null);
                 onChange(option.id);
                 onClose();
               }}

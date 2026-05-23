@@ -23,10 +23,10 @@ const Footer = () => {
               Premium custom blinds, manufactured in Yorkshire. 15+ years of expertise.
             </p>
             <div className="flex justify-center md:justify-start gap-3">
-              <a href="#" aria-label="Facebook" className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/40 transition-all duration-200 hover:-translate-y-px hover:border-white/25 hover:bg-white/10 hover:text-white">
+              <a href="https://www.facebook.com/OnlineBlindsExpressltd" target="_blank" rel="noopener noreferrer" aria-label="Facebook" className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/40 transition-all duration-200 hover:-translate-y-px hover:border-white/25 hover:bg-white/10 hover:text-white">
                 <Image src="/icons/facebook.svg" alt="Facebook" width={16} height={16} className="filter brightness-0 invert opacity-65" />
               </a>
-              <a href="#" aria-label="Instagram" className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/40 transition-all duration-200 hover:-translate-y-px hover:border-white/25 hover:bg-white/10 hover:text-white">
+              <a href="https://www.instagram.com/online_blinds_express_ltd/" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/40 transition-all duration-200 hover:-translate-y-px hover:border-white/25 hover:bg-white/10 hover:text-white">
                 <Image src="/icons/instagram.svg" alt="Instagram" width={16} height={16} className="filter brightness-0 invert opacity-65" />
               </a>
             </div>
@@ -47,6 +47,8 @@ const Footer = () => {
                 { label: 'Guides', href: '/guides' },
                 { label: 'Contact', href: '#' },
                 { label: 'Privacy', href: '/privacy-policy' },
+                { label: 'Shipping', href: '/shipping-policy' },
+                { label: 'Returns', href: '/refund-policy' },
                 { label: 'Terms', href: '/terms-and-conditions' },
               ].map((l) => (
                 <Link key={l.label} href={l.href} className="font-jost text-[13.5px] text-white/50 hover:text-white transition-colors">{l.label}</Link>
@@ -58,7 +60,7 @@ const Footer = () => {
           <div className="flex flex-col items-center md:items-start gap-3">
             <p className="font-jost text-[11px] font-semibold tracking-[0.12em] uppercase text-primary mb-1">Contact</p>
             <a href="tel:+18326706705" className="font-jost text-[13.5px] text-white/50 hover:text-white transition-colors">+1 832-670-6705</a>
-            <a href="mailto:enquiries@onlineblinds.com" className="font-jost text-[13.5px] text-white/50 hover:text-white transition-colors">enquiries@onlineblinds.com</a>
+            <a href="mailto:sales@onlineblindsexpress.co.uk" className="font-jost text-[13.5px] text-white/50 hover:text-white transition-colors">sales@onlineblindsexpress.co.uk</a>
           </div>
         </div>
       </div>
@@ -69,6 +71,8 @@ const Footer = () => {
           <p className="font-jost text-[12px] text-white/30">© {new Date().getFullYear()} Online Blinds. All Rights Reserved.</p>
           <div className="flex gap-5">
             <Link href="/privacy-policy" className="font-jost text-[12px] text-white/30 transition-colors hover:text-white/70">Privacy Policy</Link>
+            <Link href="/shipping-policy" className="font-jost text-[12px] text-white/30 transition-colors hover:text-white/70">Shipping</Link>
+            <Link href="/refund-policy" className="font-jost text-[12px] text-white/30 transition-colors hover:text-white/70">Returns</Link>
             <Link href="/terms-and-conditions" className="font-jost text-[12px] text-white/30 transition-colors hover:text-white/70">Terms</Link>
           </div>
         </div>

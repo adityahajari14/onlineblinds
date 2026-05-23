@@ -3,9 +3,10 @@
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
 import { Header, Footer } from '@/components';
+import { CustomizationModal } from '@/components/product';
 import { formatPriceWithCurrency, createCheckout } from '@/lib/api';
 import { getTotalInches } from '@/lib/pricing';
-import { CheckoutItemRequest } from '@/types';
+import { CartItem, CheckoutItemRequest, DEFAULT_CONFIGURATION, Product, ProductConfiguration } from '@/types';
 import {
   isReplacementVerticalSlatProduct,
   REPLACEMENT_VERTICAL_SLAT_FIXED_WIDTH_INCHES,
@@ -69,11 +70,30 @@ import { getEasyStickFieldLabels, getEasyStickSubtype, isEasyStickProduct } from
 import { isRomanProduct } from '@/lib/roman-blinds';
 
 export default function CartPage() {
-  const { cart, removeFromCart, updateQuantity, clearCart } = useCart();
+  const { cart, removeFromCart, updateCartItem, updateQuantity, clearCart } = useCart();
   const { customer } = useAuth();
   const [showClearConfirm, setShowClearConfirm] = useState(false);
   const [isCheckingOut, setIsCheckingOut] = useState(false);
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
+  const [editingItem, setEditingItem] = useState<CartItem | null>(null);
+  const [editingConfig, setEditingConfig] = useState<ProductConfiguration>(DEFAULT_CONFIGURATION);
+
+  const openEditModal = (item: CartItem) => {
+    setEditingItem(item);
+    setEditingConfig({ ...item.configuration });
+  };
+
+  const closeEditModal = () => {
+    setEditingItem(null);
+    setEditingConfig(DEFAULT_CONFIGURATION);
+  };
+
+  const handleSaveEditedItem = (product: Product, configuration: ProductConfiguration) => {
+    if (!editingItem) return;
+
+    updateCartItem(editingItem.id, product, configuration);
+    closeEditModal();
+  };
 
   const handleCheckout = async () => {
     setIsCheckingOut(true);
@@ -608,15 +628,23 @@ export default function CartPage() {
                                 {item.product.name}
                               </Link>
                             </div>
-                            <button
-                              onClick={() => removeFromCart(item.id)}
-                              className="shrink-0 text-muted transition-colors hover:text-red-600"
-                              aria-label="Remove item"
-                            >
-                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                              </svg>
-                            </button>
+                            <div className="flex shrink-0 items-start gap-2">
+                              <button
+                                onClick={() => openEditModal(item)}
+                                className="rounded-md border border-border bg-white px-3 py-1.5 text-[12px] font-semibold uppercase tracking-[0.04em] text-foreground transition-colors hover:border-primary/40 hover:text-primary"
+                              >
+                                Edit
+                              </button>
+                              <button
+                                onClick={() => removeFromCart(item.id)}
+                                className="text-muted transition-colors hover:text-red-600"
+                                aria-label="Remove item"
+                              >
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                              </button>
+                            </div>
                           </div>
 
                           <div className="mb-4 space-y-1">
@@ -792,6 +820,39 @@ export default function CartPage() {
               >
                 Clear Cart
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {editingItem && (
+        <div className="fixed inset-0 z-[60] bg-black/55 p-3 md:p-6">
+          <div className="mx-auto flex h-full max-w-6xl flex-col overflow-hidden rounded-2xl border border-border bg-white shadow-2xl">
+            <div className="flex items-center justify-between gap-4 border-b border-border px-4 py-3 md:px-5">
+              <div className="min-w-0">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-primary">Edit Customisation</p>
+                <p className="truncate text-sm font-semibold text-foreground md:text-base">{editingItem.product.name}</p>
+              </div>
+              <button
+                onClick={closeEditModal}
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-border text-muted transition-colors hover:bg-surface-muted hover:text-foreground"
+                aria-label="Close edit customisation"
+              >
+                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="min-h-0 flex-1 overflow-y-auto">
+              <CustomizationModal
+                product={editingItem.product}
+                config={editingConfig}
+                setConfig={setEditingConfig}
+                onClose={closeEditModal}
+                mode="edit"
+                presentation="modal"
+                onSaveConfiguredProduct={handleSaveEditedItem}
+              />
             </div>
           </div>
         </div>

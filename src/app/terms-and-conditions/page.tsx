@@ -8,130 +8,234 @@ export const metadata: Metadata = {
 
 const sections = [
   {
-    heading: 'Product',
-    content: (
-      <p>
-        The images are purely for illustration purposes only. We aim to manufacture the blinds as close as possible to
-        the illustrations provided. As all our blinds are uniquely handcrafted, we do not compromise on quality, and all
-        our products are manufactured to a high-quality standard. Our products are accurately displayed on the website;
-        however, depending on your screen monitor, the colour or shading may appear differently on different screen
-        types. You can also view the website on different platforms such as mobile devices (Android and iOS) including
-        tablets, as the website is user friendly.
-      </p>
-    ),
-  },
-  {
-    heading: 'Measurements',
+    heading: 'General',
     content: (
       <>
         <p>
-          The goods that you order are manufactured according to the measurements you provide. It is vital that you take
-          the correct measurements of your window. If you are unsure, please visit our Measuring &amp; Fitting guide on
-          our website for further information, or contact us by email for guidance on how to take the required
-          measurements accurately.
+          This website is operated by Online Blinds Express. By accessing or using this website, you agree to be bound by
+          these Terms &amp; Conditions.
         </p>
         <p>
-          Please ensure that before placing your order online or by phone you check the product details and measurements
-          of the goods. <strong>We cannot accept returns or refund the money if you have given us incorrect
-          measurements</strong>, as we will not be able to resell the goods — they are made to measure and bespoke.
+          We reserve the right to update or modify these Terms at any time without prior notice. Continued use of the site
+          after changes are posted constitutes your acceptance of the new Terms.
         </p>
       </>
     ),
   },
   {
-    heading: 'Made to Measure Products',
-    content: (
-      <p>
-        Once the product is made to your precise requirements, it is only suitable for you and therefore cannot be
-        cancelled or returned. It is important to check the product you want and the size you require.{' '}
-        <strong>Double check your order to ensure that the products ordered and measurements taken are correct.</strong>
-      </p>
-    ),
-  },
-  {
-    heading: 'Fabric',
-    content: (
-      <p>
-        Our fabrics are made from raw materials into high quality with different shades and variations. The colour on
-        fabrics is dyed, therefore shades can be slightly different per batch. The print design of some pattern fabrics
-        may not show the full range of colours or pattern design on the sample. If you are unsure about the fabrics,
-        please contact us via email for further information.
-      </p>
-    ),
-  },
-  {
-    heading: 'Tolerance',
-    content: (
-      <p>
-        The fabric will be cut by our high-class team within a variance of <strong>+/- 3cm</strong>. Please be aware
-        that if the sizes are within this tolerance limit, we will not replace the order and you will not be entitled to
-        reject the goods.
-      </p>
-    ),
-  },
-  {
-    heading: 'Ordering via Telephone',
-    content: (
-      <p>
-        Our customer services team will help you with your measurements if you are unsure. As a confirmation, our team
-        will repeat your entire order back to you so you can confirm it is correct or make any adjustments. Once an
-        order is placed you will receive an email confirmation of your order.
-      </p>
-    ),
-  },
-  {
-    heading: 'Price & Payment',
+    heading: 'Inspect a Faulty Blind',
     content: (
       <>
         <p>
-          The price displayed on the website at the time we receive your order applies. Prices are subject to change at
-          any time. We take payment from you at the time you place your order using the credit or debit card details
-          supplied by you during the checkout process.
+          If blinds are returned for inspection following a fault claim, they must be resent in their original packaging.
         </p>
-        <p>Information that we need to process your order:</p>
+        <p>
+          If, upon thorough examination, no fault is found, the cost of re-delivery will be charged to the customer.
+        </p>
+      </>
+    ),
+  },
+  {
+    heading: 'Product Specifications & Accuracy',
+    content: (
+      <>
+        <p>
+          All images on our website are for illustrative purposes only. While we strive for accuracy, colours and
+          textures may appear differently depending on your screen settings and lighting. We strongly recommend ordering
+          free samples before placing a final order.
+        </p>
+        <p>
+          As our blinds are handcrafted, minor variations may occur. Our fabrics are made from raw materials into high
+          quality products with different shades and variations. Fabric colours are dyed, therefore shades can be
+          slightly different per batch. The print design of some patterned fabrics may not show the full range of colours
+          or pattern design on the sample.
+        </p>
+        <p>
+          Please note a machine tolerance of <strong>+/- 4mm</strong>, or up to <strong>6mm</strong> depending on fabric
+          type, on all blinds. If a product falls within this tolerance, it is not deemed faulty.
+        </p>
+        <p>
+          Large Day &amp; Night blinds over <strong>1800mm</strong> wide may exhibit a slight wave effect due to size and
+          fabric weight restrictions.
+        </p>
+      </>
+    ),
+  },
+  {
+    heading: 'Measurements & Custom Orders',
+    content: (
+      <>
+        <p>
+          All goods are made to the specific measurements provided by you. It is your responsibility to ensure these
+          measurements are accurate. Please refer to our Measuring &amp; Fitting guide if you are unsure, or contact us by
+          email for guidance on how to take the required measurements accurately.
+        </p>
+        <p>
+          Please ensure that before placing your order online or by phone you check the product details and measurements
+          of the goods. Because our products are bespoke and made-to-measure, we cannot accept returns, cancellations, or
+          refunds if the measurements provided were incorrect.
+        </p>
+      </>
+    ),
+  },
+  {
+    heading: 'Ordering & Payment',
+    content: (
+      <>
+        <p>
+          A contract is formed once we send an order confirmation email to the address provided. If you order by
+          telephone, our customer services team will repeat your order back to you so you can confirm it is correct
+          before the order is placed.
+        </p>
+        <p>
+          All prices include VAT where applicable. We reserve the right to adjust pricing at any time. In the event of a
+          pricing error, we reserve the right to cancel the order and issue a full refund.
+        </p>
+        <p>
+          Discount codes must be applied at the time of checkout and cannot be added retrospectively.
+        </p>
+      </>
+    ),
+  },
+  {
+    heading: 'Delivery',
+    content: (
+      <>
+        <p>
+          Manufacturing typically takes <strong>3-5 working days</strong>, followed by dispatch. While we aim for swift
+          delivery, timeframes are estimates and not guarantees.
+        </p>
+        <p>
+          All deliveries must be signed for. If the packaging appears damaged upon arrival, please sign for the item as
+          &ldquo;Damaged&rdquo; and notify us immediately.
+        </p>
+        <p>
+          Multiple unsuccessful delivery attempts may result in re-delivery charges. Items returned to us will be held
+          for <strong>4 weeks</strong> before disposal.
+        </p>
+      </>
+    ),
+  },
+  {
+    heading: 'Damaged or Defective Goods',
+    content: (
+      <>
+        <p>
+          Any damage or manufacturing defects must be reported via email to{' '}
+          <a href="mailto:sales@onlineblindsexpress.co.uk">sales@onlineblindsexpress.co.uk</a> within{' '}
+          <strong>3 working days</strong> of delivery.
+        </p>
+        <p>
+          Do not install or fit the blind if it is damaged. We may require photographic evidence or the return of the
+          item for inspection.
+        </p>
+        <p>
+          If a fault is confirmed, we will provide a like-for-like replacement. We cannot change measurements or colours
+          during the replacement process.
+        </p>
+      </>
+    ),
+  },
+  {
+    heading: 'Cancellations & Returns',
+    content: (
+      <>
+        <p>
+          Orders cannot be cancelled or changed once they have entered the manufacturing process.
+        </p>
+        <p>
+          If an item is discontinued or out of stock, we will offer an alternative or a full refund.
+        </p>
+      </>
+    ),
+  },
+  {
+    heading: '5-Year Manufacturer’s Warranty',
+    content: (
+      <>
+        <p>
+          We provide a <strong>5-year warranty</strong> against manufacturing defects on components and fabrics.
+        </p>
+        <p>This warranty does not cover:</p>
         <ul>
-          <li>Full name</li>
-          <li>Contact number</li>
-          <li>Address / postcode</li>
-          <li>Email address</li>
-          <li>Debit / credit card details</li>
+          <li>Fair wear and tear.</li>
+          <li>Misuse, accidental damage, pet damage, or alterations.</li>
+          <li>Fading caused by prolonged exposure to sunlight.</li>
+          <li>Incorrect installation.</li>
+          <li>Blinds used in non-domestic or commercial environments.</li>
         </ul>
       </>
     ),
   },
   {
-    heading: '1 Year Guarantee',
+    heading: 'Limitation of Liability',
+    content: (
+      <>
+        <p>
+          Online Blinds Express shall not be liable for any indirect or consequential loss, damage, or expenses arising
+          from the use of our products or delays in delivery.
+        </p>
+        <p>
+          Our total liability shall not exceed the value of the goods ordered.
+        </p>
+      </>
+    ),
+  },
+  {
+    heading: 'Privacy & Data Protection',
     content: (
       <p>
-        Online Blinds Express offers a 1 year manufacturer&apos;s guarantee on manufacturing faults. We will inspect
-        the product and, if the issue can be resolved, we will repair it. If not, we will replace the product with a
-        brand new one.
+        We are committed to protecting your privacy. Your data is handled in accordance with our Privacy Policy and is
+        only shared with third parties, such as couriers, where necessary to fulfil your order.
       </p>
     ),
   },
   {
-    heading: 'Defective and Damaged Goods',
+    heading: 'Condensation Disclaimer & Limitation of Liability',
     content: (
-      <p>
-        Online Blinds Express products go through a quality check process before dispatch. If you do experience any
-        problems, please email us. You will have <strong>7 days</strong> from receipt of your product to report any
-        defective or damaged goods due to manufacturing, or damage caused during the delivery process. For any issues
-        regarding the product, we will need photos so our management team can investigate. We may also ask for the
-        product to be returned to us for inspection. Any queries will be dealt with in a highly professional and prompt
-        manner.
-      </p>
+      <>
+        <p>
+          Blinds and other window coverings may contribute to reduced airflow between the room and the window glass.
+          Under certain environmental conditions, including but not limited to high indoor humidity levels, temperature
+          differentials, inadequate ventilation, or existing window seal deficiencies, condensation may form on window
+          glass, frames, or surrounding surfaces.
+        </p>
+        <p>
+          Condensation is a natural occurrence resulting from environmental conditions and is not caused by defects in
+          the blinds themselves. The installation of blinds may increase the likelihood of condensation by limiting air
+          circulation against the window surface.
+        </p>
+        <p>Online Blinds Express shall not be held liable for:</p>
+        <ul>
+          <li>Condensation or moisture accumulation on windows or frames.</li>
+          <li>Water damage, staining, or deterioration of window sills, walls, or surrounding materials.</li>
+          <li>Mold or mildew growth resulting from environmental humidity or condensation.</li>
+          <li>Seal failure or performance issues of insulated glass units.</li>
+          <li>Any secondary damage arising from excess indoor humidity levels.</li>
+        </ul>
+        <p>
+          It is the property owner&apos;s responsibility to maintain appropriate indoor humidity levels, ensure adequate
+          ventilation, and properly maintain windows and glazing systems.
+        </p>
+        <p>
+          By purchasing and/or installing blinds, the customer acknowledges and accepts that condensation is an
+          environmental condition beyond Online Blinds Express&apos;s control.
+        </p>
+      </>
     ),
   },
   {
-    heading: 'Disclaimer',
+    heading: 'Contact Us',
     content: (
-      <p>
-        Online Blinds Express will take every care and precaution to ensure that the contents and information published
-        on this website are accurate and up to date. Unfortunately, we cannot guarantee the accuracy of contents or
-        information contained in its pages, and any person using information contained in them does so entirely at their
-        own risk. Please verify the accuracy of any information before acting upon it. We reserve the right to change
-        information at any time without notice.
-      </p>
+      <>
+        <p>
+          For any queries regarding these terms, please contact us by email at{' '}
+          <a href="mailto:sales@onlineblindsexpress.co.uk">sales@onlineblindsexpress.co.uk</a>.
+        </p>
+        <p>
+          Response time: <strong>1-3 working days</strong>.
+        </p>
+      </>
     ),
   },
 ];
@@ -157,11 +261,9 @@ export default function TermsAndConditionsPage() {
         {/* Intro */}
         <section className="mx-auto max-w-[860px] px-6 pt-10 pb-4">
           <p className="font-jost text-[15px] leading-[1.75] text-muted">
-            Using our Online Blinds Express website is maintained for your personal use and viewing. Please read our
-            Conditions of Use carefully. Accessing and using this website constitutes acceptance by you of these
-            conditions. We reserve the right to change the Conditions of Use at any time. We advise you to review the
-            Conditions of Use on a regular basis. Accessing and using this website after such changes have been posted
-            constitutes acceptance by you of these conditions.
+            Please read our Terms &amp; Conditions carefully. Accessing and using this website constitutes acceptance by
+            you of these terms. We reserve the right to change these Terms &amp; Conditions at any time, and accessing or
+            using this website after such changes have been posted constitutes acceptance by you of the updated terms.
           </p>
         </section>
 
@@ -173,7 +275,7 @@ export default function TermsAndConditionsPage() {
                 <h2 className="mb-4 font-display text-[20px] font-semibold text-foreground md:text-[22px]">
                   {section.heading}
                 </h2>
-                <div className="font-jost text-[15px] leading-[1.75] text-muted [&_p+p]:mt-3 [&_p+ul]:mt-3 [&_ul]:mt-3 [&_ul]:list-disc [&_ul]:space-y-2 [&_ul]:pl-5">
+                <div className="font-jost text-[15px] leading-[1.75] text-muted [&_a]:text-primary [&_a]:underline [&_a:hover]:text-primary/80 [&_p+p]:mt-3 [&_p+ul]:mt-3 [&_ul]:mt-3 [&_ul]:list-disc [&_ul]:space-y-2 [&_ul]:pl-5 [&_ul+p]:mt-3">
                   {section.content}
                 </div>
               </div>

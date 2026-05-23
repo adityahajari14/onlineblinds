@@ -164,6 +164,7 @@ export interface Cart {
 export interface CartContextType {
   cart: Cart;
   addToCart: (product: Product, configuration: ProductConfiguration) => void;
+  updateCartItem: (itemId: string, product: Product, configuration: ProductConfiguration) => void;
   removeFromCart: (itemId: string) => void;
   updateQuantity: (itemId: string, quantity: number) => void;
   clearCart: () => void;
