@@ -6,6 +6,7 @@ Runtime pricing now reads from `src/data/pricing/pricing-data.json`. Neon and Pr
 
 - Runtime pricing reads from `src/data/pricing/pricing-data.json`.
 - The app does not need `DATABASE_URL`, Prisma, Neon, or `PRICING_SOURCE`.
+- Server-side price validation and checkout still need Shopify Admin access through `SHOPIFY_ADMIN_ACCESS_TOKEN`; the store domain can come from either `SHOPIFY_STORE_DOMAIN` or `NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN`.
 - Server-side checkout still recalculates prices before creating a Shopify draft order.
 - Shopify catalog data uses a 1-hour cache by default to reduce Vercel ISR/data-cache writes without making normal catalog updates feel stale for too long. Redeploy after urgent Shopify product or collection edits, or lower `SHOPIFY_CACHE_REVALIDATE_SECONDS`, `SHOPIFY_ADMIN_PRODUCT_CACHE_REVALIDATE_SECONDS`, and `SERVER_API_CACHE_REVALIDATE_SECONDS` if fresher catalog reads matter more than Vercel usage.
 

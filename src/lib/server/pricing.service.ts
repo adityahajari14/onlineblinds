@@ -294,11 +294,11 @@ function getIndexes(): PricingIndexes {
 }
 
 function sortWidthBands(a: JsonWidthBand, b: JsonWidthBand) {
-  return a.sortOrder - b.sortOrder || a.widthInches - b.widthInches;
+  return a.widthInches - b.widthInches || a.widthMm - b.widthMm;
 }
 
 function sortHeightBands(a: JsonHeightBand, b: JsonHeightBand) {
-  return a.sortOrder - b.sortOrder || a.heightInches - b.heightInches;
+  return a.heightInches - b.heightInches || a.heightMm - b.heightMm;
 }
 
 function getBandWidthBands(priceBandId: string): JsonWidthBand[] {

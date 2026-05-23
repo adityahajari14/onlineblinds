@@ -3,9 +3,15 @@
 // paid order details from Shopify webhooks instead of querying Shopify account data.
 
 export const shopifyConfig = {
-  storeDomain: process.env.SHOPIFY_STORE_DOMAIN || '',
+  storeDomain:
+    process.env.SHOPIFY_STORE_DOMAIN ||
+    process.env.NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN ||
+    '',
   adminAccessToken: process.env.SHOPIFY_ADMIN_ACCESS_TOKEN || '',
-  storefrontAccessToken: process.env.SHOPIFY_STOREFRONT_ACCESS_TOKEN || '',
+  storefrontAccessToken:
+    process.env.SHOPIFY_STOREFRONT_ACCESS_TOKEN ||
+    process.env.NEXT_PUBLIC_SHOPIFY_STOREFRONT_TOKEN ||
+    '',
   apiVersion: '2025-01',
 };
 
